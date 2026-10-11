@@ -7,7 +7,7 @@ per-answer scoring and a final summary.
 **Tech stack:** FastAPI (backend) · Vanilla HTML/CSS/JS (frontend) · Groq API
 (`llama-3.3-70b-versatile`) · Docker · AWS App Runner
 
-**Live URL:** _add your deployed AWS App Runner URL here after deployment_
+**Live URL:** ResumeAnalyzer-env.eba-md4tbs54.ap-south-2.elasticbeanstalk.com
 
 ---
 
