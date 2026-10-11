@@ -1,0 +1,602 @@
+/* ==========================================================================
+   RESUMEDESK — LOGIN SCREEN
+   Futuristic AI-product dark glassmorphism theme
+   Blue / Cyan / Purple glow accents on a deep navy field
+   All motion uses transform/opacity only — GPU accelerated, no layout thrash
+   ========================================================================== */
+
+:root {
+  --bg-primary: #0B1220;
+  --bg-primary-deep: #060a12;
+  --bg-card: rgba(15, 21, 36, 0.62);
+  --border-glass: rgba(255, 255, 255, 0.06);
+  --border-input: #1f2a3d;
+
+  --accent-blue: #3b82f6;
+  --accent-cyan: #22d3ee;
+  --accent-purple: #a855f7;
+  --accent-glow: rgba(59, 130, 246, 0.18);
+
+  --success-color: #10b981;
+  --error-color: #ef4444;
+
+  --text-primary: #ffffff;
+  --text-muted: #7d8aa3;
+  --text-dim: #a6b2c8;
+
+  --font-family-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-family-title: 'Outfit', sans-serif;
+
+  --grad-main: linear-gradient(120deg, var(--accent-blue), var(--accent-cyan), var(--accent-purple));
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-family-body);
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(59, 130, 246, 0.10), transparent 60%),
+    var(--bg-primary);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  overflow: hidden;
+  position: relative;
+  cursor: default;
+}
+
+/* ==========================================================================
+   AMBIENT COLOR ORBS
+   ========================================================================== */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(150px);
+  z-index: 0;
+  opacity: 0.22;
+  pointer-events: none;
+  will-change: transform;
+  animation: orbFloat 26s infinite alternate ease-in-out;
+}
+
+.orb-blue {
+  width: 480px;
+  height: 480px;
+  background-color: var(--accent-blue);
+  top: -140px;
+  left: -120px;
+  animation-duration: 24s;
+}
+
+.orb-cyan {
+  width: 420px;
+  height: 420px;
+  background-color: var(--accent-cyan);
+  bottom: -160px;
+  right: -100px;
+  animation-duration: 30s;
+  animation-delay: -6s;
+}
+
+.orb-purple {
+  width: 380px;
+  height: 380px;
+  background-color: var(--accent-purple);
+  bottom: 10%;
+  left: 8%;
+  opacity: 0.14;
+  animation-duration: 34s;
+  animation-delay: -12s;
+}
+
+@keyframes orbFloat {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(50px, 35px) scale(1.12); }
+  100% { transform: translate(-35px, -25px) scale(0.92); }
+}
+
+/* Faint neural-grid texture behind everything */
+.grid-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 40%, transparent 85%);
+}
+
+/* ==========================================================================
+   FLOATING BACKGROUND ICONS (resume / AI motifs)
+   Each .bg-icon gets --dx / --dy / --dur / --delay set inline by login.js.
+   Motion is one shared keyframe driven purely by custom properties = only
+   CSS handles the animating, JS just places them.
+   ========================================================================== */
+.bg-icons {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bg-icon {
+  position: absolute;
+  width: var(--size, 34px);
+  height: var(--size, 34px);
+  color: var(--icon-color, var(--accent-blue));
+  opacity: var(--icon-opacity, 0.18);
+  filter: drop-shadow(0 0 6px currentColor);
+  will-change: transform;
+  animation: drift var(--dur, 20s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+  transition: opacity 0.4s ease, filter 0.4s ease, transform 0.4s ease;
+}
+
+.bg-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.bg-icon.icon-active {
+  opacity: 0.55;
+  filter: drop-shadow(0 0 14px currentColor);
+}
+
+@keyframes drift {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  25%  { transform: translate(calc(var(--dx) * 0.5), calc(var(--dy) * -0.6)) rotate(6deg); }
+  50%  { transform: translate(var(--dx), var(--dy)) rotate(-5deg); }
+  75%  { transform: translate(calc(var(--dx) * -0.4), calc(var(--dy) * 0.5)) rotate(3deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+/* ==========================================================================
+   CURSOR GLOW + MOUSE PARTICLE TRAIL
+   ========================================================================== */
+.cursor-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 420px;
+  height: 420px;
+  margin-left: -210px;
+  margin-top: -210px;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    rgba(59, 130, 246, 0.16) 0%,
+    rgba(34, 211, 238, 0.10) 35%,
+    rgba(168, 85, 247, 0.06) 60%,
+    transparent 72%);
+  pointer-events: none;
+  z-index: 2;
+  mix-blend-mode: screen;
+  will-change: transform;
+  transform: translate3d(-500px, -500px, 0);
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+
+.particle-field {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.mouse-particle {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--p-color, var(--accent-cyan));
+  box-shadow: 0 0 8px 1px var(--p-color, var(--accent-cyan));
+  will-change: transform, opacity;
+  animation: particleFade 900ms ease-out forwards;
+}
+
+@keyframes particleFade {
+  0%   { transform: translate(0, 0) scale(1); opacity: 0.85; }
+  100% { transform: translate(var(--px, 0px), var(--py, -24px)) scale(0.2); opacity: 0; }
+}
+
+/* ==========================================================================
+   CARD LAYOUT
+   ========================================================================== */
+.login-container {
+  width: 100%;
+  max-width: 440px;
+  padding: 20px;
+  position: relative;
+  z-index: 10;
+  animation: fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Animated gradient-outline wrapper — creates the "animated border" via a
+   rotating conic gradient clipped down to a 1.5px ring behind the card. */
+.login-card-border {
+  position: relative;
+  border-radius: 26px;
+  padding: 1.5px;
+  background: conic-gradient(from 0deg,
+    var(--accent-blue), var(--accent-cyan), var(--accent-purple), var(--accent-blue));
+  animation: spinBorder 8s linear infinite;
+  box-shadow: 0 0 40px rgba(59, 130, 246, 0.10);
+}
+
+@keyframes spinBorder {
+  to { transform: rotate(360deg); }
+}
+
+.login-card {
+  position: relative;
+  background-color: var(--bg-card);
+  backdrop-filter: blur(26px) saturate(130%);
+  -webkit-backdrop-filter: blur(26px) saturate(130%);
+  border-radius: 24.5px;
+  padding: 42px 40px;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Since the wrapper itself rotates, counter-rotate the inner card so its
+   content stays upright — only the gradient ring appears to spin. */
+.login-card-border {
+  animation: none; /* border ring rotation handled by ::before instead */
+}
+
+.login-card-border::before {
+  content: "";
+  position: absolute;
+  inset: -60%;
+  background: conic-gradient(from 0deg,
+    var(--accent-blue), var(--accent-cyan), var(--accent-purple), var(--accent-blue));
+  animation: spinBorder 7s linear infinite;
+  z-index: 0;
+}
+
+.login-card-border {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.login-card {
+  position: relative;
+  z-index: 1;
+  margin: 1.5px;
+  width: calc(100% - 3px);
+}
+
+/* Small floating light reflections inside the card */
+.card-sheen {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(30px);
+  opacity: 0.35;
+  z-index: 0;
+}
+
+.sheen-1 {
+  width: 140px;
+  height: 140px;
+  background: var(--accent-cyan);
+  top: -40px;
+  right: -30px;
+  animation: sheenDrift 12s ease-in-out infinite alternate;
+}
+
+.sheen-2 {
+  width: 110px;
+  height: 110px;
+  background: var(--accent-purple);
+  bottom: -30px;
+  left: -20px;
+  animation: sheenDrift 15s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes sheenDrift {
+  0%   { transform: translate(0, 0); }
+  100% { transform: translate(18px, 14px); }
+}
+
+/* ==========================================================================
+   TYPOGRAPHY
+   ========================================================================== */
+.login-header {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.brand-mark {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 16px;
+  animation: markPulse 3.6s ease-in-out infinite;
+}
+
+@keyframes markPulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.35)); }
+  50%      { transform: scale(1.05); filter: drop-shadow(0 0 14px rgba(34, 211, 238, 0.45)); }
+}
+
+.brand-title {
+  font-family: var(--font-family-title);
+  font-size: 2.1rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.brand-accent {
+  background: var(--grad-main);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientShift 6s ease infinite;
+}
+
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.brand-subtitle {
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+/* ==========================================================================
+   GOOGLE AUTH BUTTON
+   ========================================================================== */
+#googleBtnContainer {
+  position: relative;
+  z-index: 1;
+}
+
+.btn-google {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 15px 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  font-family: var(--font-family-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.28s ease,
+              box-shadow 0.28s ease,
+              background-color 0.28s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+
+/* Animated gradient ring that fades in on hover */
+.btn-google-glow {
+  position: absolute;
+  inset: -2px;
+  border-radius: 16px;
+  padding: 2px;
+  background: conic-gradient(from 0deg, var(--accent-blue), var(--accent-cyan), var(--accent-purple), var(--accent-blue));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  z-index: -1;
+  animation: spinBorder 4s linear infinite;
+  transition: opacity 0.3s ease;
+}
+
+.btn-google:hover .btn-google-glow {
+  opacity: 1;
+}
+
+.btn-google:hover {
+  background-color: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.22);
+  transform: translateY(-2px) scale(1.01);
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.28),
+    0 0 24px rgba(59, 130, 246, 0.22),
+    0 0 40px rgba(168, 85, 247, 0.12);
+}
+
+.btn-google:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.btn-google:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.google-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 3px;
+  flex-shrink: 0;
+}
+
+.google-icon {
+  width: 100%;
+  height: 100%;
+}
+
+/* Decorative nav arrow inside the button */
+.btn-arrow {
+  width: 16px;
+  height: 16px;
+  margin-left: 2px;
+  color: var(--text-dim);
+  transform: translateX(-4px) rotate(0deg) scale(0.9);
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 0.3s ease,
+              color 0.3s ease;
+  flex-shrink: 0;
+}
+
+.btn-google:hover .btn-arrow {
+  opacity: 1;
+  transform: translateX(0) rotate(0deg) scale(1.05);
+  animation: arrowColorCycle 1.8s linear infinite;
+}
+
+/* Arrow cycles through the full blue -> cyan -> purple palette while hovered,
+   instead of sitting on a single flat tint. */
+@keyframes arrowColorCycle {
+  0%   { color: var(--accent-blue);   filter: drop-shadow(0 0 6px var(--accent-blue))   drop-shadow(0 0 12px var(--accent-blue)); }
+  33%  { color: var(--accent-cyan);   filter: drop-shadow(0 0 6px var(--accent-cyan))   drop-shadow(0 0 12px var(--accent-cyan)); }
+  66%  { color: var(--accent-purple); filter: drop-shadow(0 0 6px var(--accent-purple)) drop-shadow(0 0 12px var(--accent-purple)); }
+  100% { color: var(--accent-blue);   filter: drop-shadow(0 0 6px var(--accent-blue))   drop-shadow(0 0 12px var(--accent-blue)); }
+}
+
+.btn-google:active .btn-arrow {
+  transform: translateX(2px) rotate(12deg) scale(1);
+}
+
+/* Ripple effect spawned by login.js on click */
+.btn-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.55) 0%, rgba(59, 130, 246, 0.25) 45%, transparent 70%);
+  transform: scale(0);
+  opacity: 1;
+  pointer-events: none;
+  animation: rippleOut 650ms ease-out forwards;
+}
+
+@keyframes rippleOut {
+  to { transform: scale(1); opacity: 0; }
+}
+
+/* ==========================================================================
+   ALERT BANNER
+   ========================================================================== */
+.alert-error {
+  position: relative;
+  z-index: 1;
+  background-color: rgba(239, 68, 68, 0.09);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+  display: none; /* Controlled by JS */
+  align-items: center;
+  gap: 10px;
+  animation: shake 0.45s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-6px); }
+  40%      { transform: translateX(5px); }
+  60%      { transform: translateX(-4px); }
+  80%      { transform: translateX(3px); }
+}
+
+/* ==========================================================================
+   FOOTER
+   ========================================================================== */
+.login-footer {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 26px;
+  line-height: 1.5;
+}
+
+.login-footer a {
+  color: var(--accent-cyan);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.login-footer a:hover {
+  color: var(--accent-blue);
+  text-decoration: underline;
+}
+
+/* Google GIS prompt overrides */
+iframe[id^="gsi_"] {
+  display: block;
+  margin: 0 auto;
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+@media (max-width: 480px) {
+  .login-container { padding: 12px; }
+  .login-card { padding: 32px 20px; }
+  .brand-title { font-size: 1.7rem; }
+  .brand-subtitle { font-size: 0.85rem; }
+  .cursor-glow { width: 280px; height: 280px; margin-left: -140px; margin-top: -140px; }
+}
+
+@media (max-width: 480px) {
+  .bg-icon { --size: 24px !important; }
+}
+
+/* Respect reduced-motion preference: freeze decorative motion, keep UI usable */
+@media (prefers-reduced-motion: reduce) {
+  .orb,
+  .bg-icon,
+  .login-card-border::before,
+  .btn-google-glow,
+  .card-sheen,
+  .brand-mark,
+  .brand-accent,
+  .btn-arrow,
+  .login-container {
+    animation: none !important;
+  }
+  .cursor-glow { display: none; }
+}
